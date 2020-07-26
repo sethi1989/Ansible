@@ -1,0 +1,68 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "projectName": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies a name for generating resource names."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Specifies the location for all resources."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies a username for the Virtual Machine."
+      }
+    },
+    "adminPublicKey": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the SSH rsa public key file as a string. Use \"ssh-keygen -t rsa -b 2048\" to generate your SSH key pairs."
+      }
+    }
+  },
+  "variables": {
+    "vNetName": "[concat(parameters('projectName'), '-vnet')]",
+    "vNetAddressPrefixes": "10.0.0.0/16",
+    "vNetSubnetName": "default",
+    "vNetSubnetAddressPrefix": "10.0.0.0/24",
+    "vmName": "[concat(parameters('projectName'), '-vm')]",
+    "publicIPAddressName": "[concat(parameters('projectName'), '-ip')]",
+    "networkInterfaceName": "[concat(parameters('projectName'), '-nic')]",
+    "networkSecurityGroupName": "[concat(parameters('projectName'), '-nsg')]",
+    "networkSecurityGroupName2": "[concat(variables('vNetSubnetName'), '-nsg')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2020-05-01",
+      "name": "[variables('networkSecurityGroupName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "ssh_rule",
+            "properties": {
+              "description": "Locks inbound down to ssh default port 22.",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 123,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+  ],
+}
